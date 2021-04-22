@@ -1,0 +1,270 @@
+#INCLUDE <P18F6680.INC>
+; freq set to 4MHz
+; TMR0 - USED 16 BITS
+
+HEX01		SET	0X01
+HEX02		SET 0X02
+HEX04		SET 0X03
+L1			SET 0X05
+L2			SET 0X06
+L3			SET 0X07
+count		SET 0X08
+sec			SET	0X09
+
+			ORG 0X00
+			GOTO MAIN	
+
+			ORG 0X08
+			GOTO ISR_INT0
+
+			ORG 0X18
+			RETFIE
+		
+MAIN		BCF RCON,IPEN,A
+			BSF	INTCON, GIEH,A
+			BSF INTCON, INT0IE,A
+			BCF INTCON, INT0IF,A
+		
+			CLRF TRISA,A
+			CLRF TRISC,A
+			CLRF TRISD,A
+			CLRF TRISE,A
+			CLRF TRISF,A
+			CLRF TRISG,A			; CONFIG PORT
+		
+			CLRF PORTA,A
+			CLRF PORTC,A
+			CLRF PORTD,A
+			CLRF PORTE,A
+			CLRF PORTF,A		
+			CLRF PORTG,A			; CLEAR DATA AT PORT
+		
+;...............................................................................
+			MOVLW 0X01
+			MOVWF HEX01,A
+			MOVLW 0X02
+			MOVWF HEX02,A
+			MOVLW 0X04
+			MOVWF HEX04,A
+;..............................................................................
+; TRAFFIC FLOW START
+;..............................................................................		
+
+TRAF_FLOW	MOVLW	B'11110000'	
+			MOVWF	PORTF,A			;	RED bi colour
+   			CALL	GREEN1			;TEKAN
+			CALL	DELAY5SECS	
+			CALL	DELAY5SECS		; TRAF1 GREEN FOR 10S
+			CALL	YELLOW1
+			CALL	DELAY5SECS		; TRAF1 YELLOW FOR 5S
+			CALL	CHECK
+			CALL	GREEN2	
+			CALL	DELAY5SECS	
+			CALL	DELAY5SECS		; TRAF2 GREEN FOR 10S
+			CALL	YELLOW2
+			CALL	DELAY5SECS		; TRAF2 YELLOW FOR 5S
+			CALL	CHECK
+			CALL	GREEN3	
+			CALL	DELAY5SECS	
+			CALL	DELAY5SECS		; TRAF3 GREEN FOR 10S
+			CALL	YELLOW3
+			CALL	DELAY5SECS		; TRAF3 YELLOW FOR 5S
+			CALL	CHECK
+			BRA 	TRAF_FLOW
+;.........................................................................................................
+; INTERRUPT SERVICE ROUTINE FOR PEDESTRIAN TRAFFIC
+;.........................................................................................................
+			
+ISR_INT0 	BCF 	INTCON, INT0IF,A	; CLEAR FLAG
+			SETF	0X30
+			
+			RETFIE
+;.........................................................................................................
+; check subroutine
+;.........................................................................................................
+
+CHECK		MOVLW	0XFF
+			CPFSEQ	0X30, A
+			BRA		NOTEQ
+			CALL	PEDES
+NOTEQ		RETURN
+
+PEDES		CALL 	ALLRED			; GREEN SO GOTO YELLOW TO SLOW DOWN
+PED_GREEN	CALL	DELAY5SECS
+			MOVLW	B'00001111'		;GREEN bi colour
+			MOVWF	PORTF,A		
+			CLRF 	0X20	
+
+			CALL	CD15SECS
+			MOVLW	B'11110000'		
+			MOVWF	PORTF,A			;RED bi colour
+			CALL	DELAY5SECS
+			CLRF 	0X30
+			RETURN
+
+;...............................................................................................
+
+CD15SECS	
+			MOVLW 	B'00010101'		;D'15'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00010100'		;D'14'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00010011'		;D'13'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00010010'		;D'12'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00010001'		;D'11'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00010000'		;D'10'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00001001'		;D'9'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00001000'		;D'8'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00000111'		;D'7'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00000110'		;D'6'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00000101'		;D'5'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00000100'		;D'4'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00000011'		;D'3'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00000010'		;D'2'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			MOVLW 	B'00000001'		;D'1'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+
+			CALL	BUZZER
+			MOVLW 	B'00000000'		;D'0'
+			MOVWF	PORTD,A
+			MOVWF	PORTE,A
+			CALL	DELAY1SEC
+			RETURN 	FAST
+
+;.............................................................................................
+; SUBROUTINES FOR TRAFFIC FLOW
+;.............................................................................................
+
+GREEN1		MOVFF	HEX04,PORTA
+			MOVFF	HEX01,PORTG
+			MOVFF	HEX01,PORTC		; TRAF1 GREEN OTHERS RED
+			RETURN 	FAST
+
+GREEN2		MOVFF	HEX01,PORTA
+			MOVFF	HEX04,PORTG
+			MOVFF	HEX01,PORTC		; TRAF2 GREEN OTHERS RED
+			RETURN 	FAST
+
+GREEN3		MOVFF	HEX01,PORTA
+			MOVFF	HEX01,PORTG
+			MOVFF	HEX04,PORTC		; TRAF3 GREEN OTHERS RED
+			RETURN 	FAST
+
+YELLOW1		MOVFF	HEX02,PORTA
+			MOVFF	HEX01,PORTG
+			MOVFF	HEX01,PORTC		; TRAF1 YELLOW OTHERS RED
+			
+			RETURN 	FAST
+
+YELLOW2		MOVFF	HEX01,PORTA
+			MOVFF	HEX02,PORTG
+			MOVFF	HEX01,PORTC		; TRAF2 YELLOW OTHERS RED
+			RETURN 	FAST
+
+YELLOW3		MOVFF	HEX01,PORTA
+			MOVFF	HEX01,PORTG
+			MOVFF	HEX02,PORTC		; TRAF3 YELLOW OTHERS RED
+			RETURN 	FAST
+
+ALLRED		MOVFF	HEX01,PORTA
+			MOVFF	HEX01,PORTG
+			MOVFF	HEX01,PORTC		; ALL TRAF GOES RED	
+			RETURN 	FAST
+;............................................................................................
+; SUBROUTINE FOR TMR0 delay 5 seconds
+;............................................................................................
+			
+DELAY5SECS	BCF 	INTCON, TMR0IF,A
+			MOVLW 	0X06
+			MOVWF 	T0CON,A
+			MOVLW 	0X67
+			MOVWF 	TMR0H,A
+			MOVLW 	0X6A
+			MOVWF 	TMR0L,A
+			BSF		T0CON, TMR0ON, A
+_wait1		BTFSS	INTCON, TMR0IF, A
+			BRA		_wait1
+			BCF		T0CON, TMR0ON, A
+			
+			RETURN	FAST 
+
+;........................................................................................
+; SUBROUTINE FOR TMR0 delay 1 seconds
+;........................................................................................
+
+DELAY1SEC	BCF 	INTCON, TMR0IF,A
+			MOVLW 	0X06
+			MOVWF 	T0CON,A
+			MOVLW 	0XE1
+			MOVWF 	TMR0H,A
+			MOVLW 	0X7C
+			MOVWF 	TMR0L,A
+			BSF		T0CON, TMR0ON, A
+_wait2		BTFSS	INTCON, TMR0IF, A
+			BRA		_wait2
+			BCF		T0CON, TMR0ON, A
+
+			RETURN	FAST
+
+
+;....................................................................
+;END PROGRAM
+	
+			END
+
